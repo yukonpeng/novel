@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'novel-reader-extension/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: novel-reader-extension/package-lock.json
+
+      - run: npm ci
+        working-directory: novel-reader-extension
+
+      - run: node node_modules/vite/bin/vite.js build --config vite.config.standalone.ts
+        working-directory: novel-reader-extension
+
+      - name: Add PWA manifest and icons
+        run: |
+          cd novel-reader-extension/.output/standalone
+
+          # Add apple-mobile-web-app meta tags for iOS
+          sed -i 's|<title>Novel Reader</title>|<title>Novel Reader</title>\n    <meta name="apple-mobile-web-app-capable" content="yes">\n    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n    <meta name="apple-mobile-web-app-title" content="Novel Reader">|' index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: novel-reader-extension/.output/standalone
+
+      - uses: actions/deploy-pages@v4
+        id: deployment

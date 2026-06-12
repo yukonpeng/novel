@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx wxt *)",
+      "Bash(where node *)",
+      "Bash(node node_modules/wxt/bin/wxt.mjs build)",
+      "Bash(npx vite *)",
+      "Bash(node ./node_modules/vite/bin/vite.js build --config vite.config.standalone.ts)",
+      "Bash(node ./node_modules/wxt/bin/wxt.mjs build)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(rm -rf .output/standalone)",
+      "Bash(\"/c/Program Files/nodejs/node\" node_modules/vite/bin/vite.js build --config vite.config.standalone.ts)",
+      "Bash(grep *)",
+      "Bash(node -e ' *)",
+      "Bash(where msedge *)",
+      "Bash(where chrome *)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Read(//c/Program Files \\(x86\\)/Google/Chrome/Application/**)",
+      "Read(//c/Program Files/Microsoft/Edge/Application/**)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --dump-dom \"file:///D:/codes/thinks/novel-reader-extension/.output/standalone/index.html\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --repl \"file:///D:/codes/thinks/novel-reader-extension/.output/standalone/index.html\")",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)"
+    ]
+  }
+}

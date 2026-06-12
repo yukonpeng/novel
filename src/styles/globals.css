@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nr-bg: #1e1e1e;
+  --nr-fg: #d4d4d4;
+  --nr-sidebar-bg: #252526;
+  --nr-sidebar-fg: #cccccc;
+  --nr-sidebar-select-bg: #094771;
+  --nr-sidebar-select-fg: #ffffff;
+  --nr-titlebar-bg: #323233;
+  --nr-titlebar-fg: #cccccc;
+  --nr-statusbar-bg: #007acc;
+  --nr-statusbar-fg: #ffffff;
+  --nr-button-bg: #0e639c;
+  --nr-button-fg: #ffffff;
+  --nr-button-active-bg: #1177bb;
+  --nr-text-bg: #1e1e1e;
+  --nr-text-fg: #d4d4d4;
+  --nr-text-select-bg: #264f78;
+  --nr-scrollbar-bg: #1e1e1e;
+  --nr-scrollbar-trough: #1e1e1e;
+  --nr-border-color: #3c3c3c;
+  --nr-hover-bg: #2a2d2e;
+  --nr-input-bg: #3c3c3c;
+  --nr-input-fg: #cccccc;
+  --nr-accent: #007acc;
+  --nr-line-number-fg: #858585;
+  --nr-separator: #474747;
+  --nr-section-header-bg: #252526;
+  --nr-section-header-fg: #bbbbbb;
+  --nr-chapter-item-fg: #cccccc;
+  --nr-chapter-current-fg: #ffffff;
+  --nr-chapter-current-bg: #094771;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: auto;
+  background: var(--nr-bg);
+  color: var(--nr-fg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--nr-text-select-bg);
+}
+
+.nr-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.nr-scrollbar::-webkit-scrollbar-track {
+  background: var(--nr-scrollbar-trough);
+}
+
+.nr-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--nr-border-color);
+  border-radius: 999px;
+}
+
+.nr-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--nr-hover-bg);
+}
