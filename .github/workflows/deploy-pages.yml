@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install
+      - run: rm -f package-lock.json && npm install
 
       - run: node node_modules/vite/bin/vite.js build --config vite.config.standalone.ts
 
