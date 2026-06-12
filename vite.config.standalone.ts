@@ -2,6 +2,9 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** Inline all JS/CSS into index.html so the file works from file:// without a server */
 function inlineAssets(): Plugin {
