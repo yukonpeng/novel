@@ -25,9 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: package-lock.json
+          node-version: 20
 
       - run: npm install
 
@@ -35,8 +33,13 @@ jobs:
 
       - name: Add iOS PWA meta tags
         run: |
-          cd .output/standalone
-          sed -i 's|<title>Novel Reader</title>|<title>Novel Reader</title>\n    <meta name="apple-mobile-web-app-capable" content="yes">\n    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n    <meta name="apple-mobile-web-app-title" content="Novel Reader">|' index.html
+          node -e "
+          const fs = require('fs');
+          const p = '.output/standalone/index.html';
+          let h = fs.readFileSync(p, 'utf-8');
+          h = h.replace('<title>Novel Reader</title>', '<title>Novel Reader</title>\n    <meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n    <meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">\n    <meta name=\"apple-mobile-web-app-title\" content=\"Novel Reader\">');
+          fs.writeFileSync(p, h);
+          "
 
       - uses: actions/upload-pages-artifact@v3
         with:

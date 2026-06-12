@@ -16,7 +16,7 @@ function inlineAssets(): Plugin {
         if (chunk.type === 'chunk') chunk.code = chunk.code.replace(/<\/script/g, '<\\/script');
       }
     },
-    closeBundle() {
+    writeBundle() {
       const outDir = path.resolve(__dirname, '.output/standalone');
       const htmlPath = path.join(outDir, 'index.html');
       let html = fs.readFileSync(htmlPath, 'utf-8');
