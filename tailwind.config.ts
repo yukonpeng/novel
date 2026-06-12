@@ -1,7 +1,8 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 export default {
-  content: ['./entrypoints/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
+  content: ['./entrypoints/**/*.{ts,tsx}', './src/**/*.{ts,tsx}', './standalone/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -15,5 +16,9 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addVariant }) => {
+      addVariant('compact', '.compact &');
+    }),
+  ],
 } satisfies Config;

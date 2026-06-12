@@ -86,7 +86,7 @@ export function ReaderShell() {
   return (
     <div
       ref={containerRef}
-      className={`flex h-full w-full bg-[var(--nr-bg)] text-[var(--nr-fg)] ${compact ? 'min-w-[280px] min-h-[400px]' : 'min-w-[360px] min-h-[500px]'}`}
+      className={`flex h-full w-full bg-[var(--nr-bg)] text-[var(--nr-fg)] ${compact ? 'min-w-[280px] min-h-[400px] compact' : 'min-w-[360px] min-h-[500px]'}`}
       onAuxClick={onAuxClick}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
@@ -103,14 +103,14 @@ export function ReaderShell() {
           )}
           {sidebar}
           <main className="flex min-w-0 flex-1 flex-col">
-            <div className="flex h-9 items-center gap-2 bg-[var(--nr-titlebar-bg)] px-3 text-xs text-[var(--nr-titlebar-fg)]">
-              <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)]" onClick={() => setDrawerOpen(!drawerOpen)}>☰</button>
+            <div className="flex h-11 items-center gap-2 bg-[var(--nr-titlebar-bg)] px-3 text-sm text-[var(--nr-titlebar-fg)]">
+              <button className="rounded px-3 py-2 hover:bg-[var(--nr-hover-bg)]" onClick={() => setDrawerOpen(!drawerOpen)}>☰</button>
               <div className="min-w-0 flex-1 truncate">{currentBook?.name ?? '欢迎使用小说阅读器'}</div>
-              <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)]" onClick={() => setSettingsOpen(true)}>设置</button>
+              <button className="rounded px-3 py-2 hover:bg-[var(--nr-hover-bg)]" onClick={() => setSettingsOpen(true)}>设置</button>
             </div>
             {state.error && <div className="bg-red-700 px-3 py-1.5 text-xs text-white">{state.error}</div>}
             <ReaderPane />
-            <div className="flex h-6 shrink-0 items-center justify-between gap-1 bg-[var(--nr-statusbar-bg)] px-2 text-[10px] text-[var(--nr-statusbar-fg)]">
+            <div className="flex h-8 shrink-0 items-center justify-between gap-1 bg-[var(--nr-statusbar-bg)] px-2 text-xs text-[var(--nr-statusbar-fg)]">
               <span className="truncate">{currentBook?.name ?? ''}</span>
               <span className="shrink-0">{state.currentBookId ? `${(((state.currentPage + 1) / state.pages.length) * 100).toFixed(1)}%` : '拖入 TXT 或点击 + 导入'}</span>
             </div>

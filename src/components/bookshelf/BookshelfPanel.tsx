@@ -18,10 +18,10 @@ export function BookshelfPanel() {
         {state.books.map((book) => {
           const active = book.id === state.currentBookId;
           return (
-            <div key={book.id} className={`group mb-2 rounded border border-transparent p-2 text-sm ${active ? 'bg-[var(--nr-sidebar-select-bg)] text-[var(--nr-sidebar-select-fg)]' : 'text-[var(--nr-sidebar-fg)] hover:bg-[var(--nr-hover-bg)]'}`}>
+            <div key={book.id} className={`group mb-2 rounded border border-transparent p-2 text-sm compact:p-3 ${active ? 'bg-[var(--nr-sidebar-select-bg)] text-[var(--nr-sidebar-select-fg)]' : 'text-[var(--nr-sidebar-fg)] hover:bg-[var(--nr-hover-bg)]'}`}>
               {renamingId === book.id ? (
                 <form onSubmit={(event) => { event.preventDefault(); void actions.renameBook(book.id, name); setRenamingId(null); }}>
-                  <input className="w-full rounded bg-[var(--nr-input-bg)] px-2 py-1 text-[var(--nr-input-fg)]" value={name} onChange={(event) => setName(event.target.value)} autoFocus />
+                  <input className="w-full rounded bg-[var(--nr-input-bg)] px-2 py-1 text-[var(--nr-input-fg)] compact:px-3 compact:py-2" value={name} onChange={(event) => setName(event.target.value)} autoFocus />
                 </form>
               ) : (
                 <button className="block w-full truncate text-left" onClick={() => void actions.openBook(book.id)}>{book.name}</button>

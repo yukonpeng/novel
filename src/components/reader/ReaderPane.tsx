@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useReader } from '@/src/state/ReaderContext';
+import { useSwipeNavigation } from '@/src/hooks/useSwipeNavigation';
 
 function highlightText(text: string, keyword: string) {
   if (!keyword) return text;
@@ -25,8 +26,45 @@ function highlightText(text: string, keyword: string) {
 export function ReaderPane() {
   const { state, actions } = useReader();
   const pageText = state.pages[state.currentPage] ?? '';
+  const isFirstPage = state.currentPage <= 0;
+  const isLastPage = state.currentPage >= state.pages.length - 1;
 
   const articleRef = useRef<HTMLElement>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [transition, setTransition] = useState('');
+  const swipeMovedRef = useRef(false);
+  const rafRef = useRef<number>(0);
+
+  const onSwipeLeft = useCallback(() => {
+    if (isLastPage) return;
+    setTransition('transform 0.3s ease-out');
+    setSwipeOffset(-window.innerWidth);
+    setTimeout(() => {
+      void actions.setPage(state.currentPage + 1);
+      setSwipeOffset(0);
+      setTransition('none');
+      setTimeout(() => setTransition(''), 50);
+    }, 300);
+  }, [actions, state.currentPage, isLastPage]);
+
+  const onSwipeRight = useCallback(() => {
+    if (isFirstPage) return;
+    setTransition('transform 0.3s ease-out');
+    setSwipeOffset(window.innerWidth);
+    setTimeout(() => {
+      void actions.setPage(state.currentPage - 1);
+      setSwipeOffset(0);
+      setTransition('none');
+      setTimeout(() => setTransition(''), 50);
+    }, 300);
+  }, [actions, state.currentPage, isFirstPage]);
+
+  const { handlers, offsetRef, animatingRef } = useSwipeNavigation(
+    onSwipeLeft,
+    onSwipeRight,
+    !isLastPage,
+    !isFirstPage,
+  );
 
   useEffect(() => {
     articleRef.current?.scrollTo(0, 0);
@@ -49,6 +87,27 @@ export function ReaderPane() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [actions, state.currentPage]);
 
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    swipeMovedRef.current = true;
+    handlers.onTouchMove(e);
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!animatingRef.current) {
+        setSwipeOffset(offsetRef.current);
+        setTransition('');
+      }
+    });
+  }, [handlers, offsetRef, animatingRef]);
+
+  const handleTouchEnd = useCallback(() => {
+    handlers.onTouchEnd();
+    if (!animatingRef.current) {
+      setSwipeOffset(0);
+      setTransition('transform 0.2s ease-out');
+      setTimeout(() => setTransition(''), 200);
+    }
+  }, [handlers, animatingRef]);
+
   if (!state.currentBookId) {
     return (
       <div className="flex flex-1 items-center justify-center bg-[var(--nr-text-bg)] p-4 text-center text-[var(--nr-text-fg)]">
@@ -65,17 +124,20 @@ export function ReaderPane() {
       <article
         ref={articleRef}
         className="nr-scrollbar min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-6 leading-8 text-[var(--nr-text-fg)] sm:px-10 sm:py-8"
-        style={{ fontFamily: state.config.fontFamily, fontSize: state.config.fontSize }}
-        onClick={() => void actions.setPage(state.currentPage + 1)}
-        onContextMenu={(event) => { event.preventDefault(); void actions.setPage(state.currentPage - 1); }}
+        style={{ fontFamily: state.config.fontFamily, fontSize: state.config.fontSize, transform: swipeOffset ? `translateX(${swipeOffset}px)` : undefined, transition: transition || undefined }}
+        onTouchStart={(e) => { swipeMovedRef.current = false; handlers.onTouchStart(e); }}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={() => { if (!swipeMovedRef.current) void actions.setPage(state.currentPage + 1); }}
+        onContextMenu={(event) => { event.preventDefault(); if (!swipeMovedRef.current) void actions.setPage(state.currentPage - 1); }}
       >
         {highlightText(pageText, state.searchKeyword)}
       </article>
-      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 sm:gap-4 sm:px-4">
-        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4" onClick={() => void actions.setPage(state.currentPage - 1)}>←</button>
-        <span className="shrink-0 text-center text-xs sm:w-24 sm:text-sm">{state.currentPage + 1}/{state.pages.length}</span>
+      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 sm:gap-4 sm:px-4 compact:h-14 compact:gap-3 compact:px-3">
+        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4 compact:px-4 compact:py-2.5 compact:text-lg" onClick={() => void actions.setPage(state.currentPage - 1)}>←</button>
+        <span className="shrink-0 text-center text-xs sm:w-24 sm:text-sm compact:text-sm">{state.currentPage + 1}/{state.pages.length}</span>
         <input className="min-w-0 flex-1 accent-[var(--nr-accent)]" type="range" min={1} max={state.pages.length} value={state.currentPage + 1} onChange={(event) => void actions.setPage(Number(event.target.value) - 1)} />
-        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4" onClick={() => void actions.setPage(state.currentPage + 1)}>→</button>
+        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4 compact:px-4 compact:py-2.5 compact:text-lg" onClick={() => void actions.setPage(state.currentPage + 1)}>→</button>
       </div>
     </div>
   );

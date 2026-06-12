@@ -16,7 +16,7 @@ export function ChapterOutline({ onChapterSelect }: { onChapterSelect?: () => vo
         {state.chapters.map((chapter, index) => (
           <button
             key={`${chapter.charPos}-${chapter.title}`}
-            className={`mb-1 block w-full truncate rounded px-2 py-1.5 text-left text-sm ${index === currentIndex ? 'bg-[var(--nr-chapter-current-bg)] text-[var(--nr-chapter-current-fg)]' : 'text-[var(--nr-chapter-item-fg)] hover:bg-[var(--nr-hover-bg)]'}`}
+            className={`mb-1 block w-full truncate rounded px-2 py-1.5 text-left text-sm compact:px-3 compact:py-2.5 ${index === currentIndex ? 'bg-[var(--nr-chapter-current-bg)] text-[var(--nr-chapter-current-fg)]' : 'text-[var(--nr-chapter-item-fg)] hover:bg-[var(--nr-hover-bg)]'}`}
             onClick={() => { void actions.setPage(chapter.page); onChapterSelect?.(); }}
           >
             {chapter.title}
