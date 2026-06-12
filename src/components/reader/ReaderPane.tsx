@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useDrag } from '@use-gesture/react';
 import { useReader } from '@/src/state/ReaderContext';
-import { useSwipeNavigation } from '@/src/hooks/useSwipeNavigation';
 
 function highlightText(text: string, keyword: string) {
   if (!keyword) return text;
@@ -32,38 +32,78 @@ export function ReaderPane() {
   const articleRef = useRef<HTMLElement>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [transition, setTransition] = useState('');
-  const swipeMovedRef = useRef(false);
-  const rafRef = useRef<number>(0);
+  const animatingRef = useRef(false);
 
-  const onSwipeLeft = useCallback(() => {
-    if (isLastPage) return;
+  const animateToPage = useCallback((direction: 'next' | 'prev') => {
+    if (animatingRef.current) return;
+    animatingRef.current = true;
+    const sign = direction === 'next' ? -1 : 1;
     setTransition('transform 0.3s ease-out');
-    setSwipeOffset(-window.innerWidth);
+    setSwipeOffset(sign * window.innerWidth);
     setTimeout(() => {
-      void actions.setPage(state.currentPage + 1);
+      void actions.setPage(state.currentPage + (direction === 'next' ? 1 : -1));
       setSwipeOffset(0);
       setTransition('none');
-      setTimeout(() => setTransition(''), 50);
+      setTimeout(() => {
+        setTransition('');
+        animatingRef.current = false;
+      }, 50);
     }, 300);
-  }, [actions, state.currentPage, isLastPage]);
+  }, [actions, state.currentPage]);
 
-  const onSwipeRight = useCallback(() => {
-    if (isFirstPage) return;
-    setTransition('transform 0.3s ease-out');
-    setSwipeOffset(window.innerWidth);
-    setTimeout(() => {
-      void actions.setPage(state.currentPage - 1);
-      setSwipeOffset(0);
-      setTransition('none');
-      setTimeout(() => setTransition(''), 50);
-    }, 300);
-  }, [actions, state.currentPage, isFirstPage]);
+  const bind = useDrag(
+    ({ movement: [mx], velocity: [vx], active, cancel, swipe, tap }) => {
+      if (animatingRef.current) {
+        cancel();
+        return;
+      }
 
-  const { handlers, offsetRef, animatingRef } = useSwipeNavigation(
-    onSwipeLeft,
-    onSwipeRight,
-    !isLastPage,
-    !isFirstPage,
+      if (tap) return;
+
+      if (swipe[0]) {
+        if (swipe[0] === -1 && !isLastPage) {
+          animateToPage('next');
+        } else if (swipe[0] === 1 && !isFirstPage) {
+          animateToPage('prev');
+        } else {
+          setSwipeOffset(0);
+          setTransition('transform 0.2s ease-out');
+          setTimeout(() => setTransition(''), 200);
+        }
+        return;
+      }
+
+      if (active) {
+        const maxOffset = window.innerWidth * 0.3;
+        let offset = mx;
+        if (isFirstPage && offset > 0) offset = offset * 0.3;
+        if (isLastPage && offset < 0) offset = offset * 0.3;
+        offset = Math.max(-maxOffset, Math.min(maxOffset, offset));
+        setSwipeOffset(offset);
+        setTransition('');
+
+        const threshold = window.innerWidth * 0.2;
+        if (Math.abs(offset) > threshold || Math.abs(vx) > 0.5) {
+          if (offset < 0 && !isLastPage) {
+            animateToPage('next');
+            cancel();
+          } else if (offset > 0 && !isFirstPage) {
+            animateToPage('prev');
+            cancel();
+          }
+        }
+      } else {
+        setSwipeOffset(0);
+        setTransition('transform 0.2s ease-out');
+        setTimeout(() => setTransition(''), 200);
+      }
+    },
+    {
+      axis: 'x',
+      filterTaps: true,
+      threshold: 10,
+      swipe: { velocity: 0.4, distance: 50 },
+    },
   );
 
   useEffect(() => {
@@ -87,27 +127,6 @@ export function ReaderPane() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [actions, state.currentPage]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    swipeMovedRef.current = true;
-    handlers.onTouchMove(e);
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      if (!animatingRef.current) {
-        setSwipeOffset(offsetRef.current);
-        setTransition('');
-      }
-    });
-  }, [handlers, offsetRef, animatingRef]);
-
-  const handleTouchEnd = useCallback(() => {
-    handlers.onTouchEnd();
-    if (!animatingRef.current) {
-      setSwipeOffset(0);
-      setTransition('transform 0.2s ease-out');
-      setTimeout(() => setTransition(''), 200);
-    }
-  }, [handlers, animatingRef]);
-
   if (!state.currentBookId) {
     return (
       <div className="flex flex-1 items-center justify-center bg-[var(--nr-text-bg)] p-4 text-center text-[var(--nr-text-fg)]">
@@ -123,13 +142,11 @@ export function ReaderPane() {
     <div className="flex min-h-0 flex-1 flex-col bg-[var(--nr-text-bg)]">
       <article
         ref={articleRef}
-        className="nr-scrollbar min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-6 leading-8 text-[var(--nr-text-fg)] sm:px-10 sm:py-8"
+        {...bind()}
+        className="nr-scrollbar min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words px-4 py-6 leading-8 text-[var(--nr-text-fg)] sm:px-10 sm:py-8 touch-pan-y"
         style={{ fontFamily: state.config.fontFamily, fontSize: state.config.fontSize, transform: swipeOffset ? `translateX(${swipeOffset}px)` : undefined, transition: transition || undefined }}
-        onTouchStart={(e) => { swipeMovedRef.current = false; handlers.onTouchStart(e); }}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onClick={() => { if (!swipeMovedRef.current) void actions.setPage(state.currentPage + 1); }}
-        onContextMenu={(event) => { event.preventDefault(); if (!swipeMovedRef.current) void actions.setPage(state.currentPage - 1); }}
+        onClick={() => void actions.setPage(state.currentPage + 1)}
+        onContextMenu={(event) => { event.preventDefault(); void actions.setPage(state.currentPage - 1); }}
       >
         {highlightText(pageText, state.searchKeyword)}
       </article>
