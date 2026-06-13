@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Compass, Menu, Plus, Settings as SettingsIcon } from 'lucide-react';
 import { BookshelfPanel } from '@/src/components/bookshelf/BookshelfPanel';
 import { ReaderPane } from '@/src/components/reader/ReaderPane';
 import { ChapterOutline } from '@/src/components/reader/ChapterOutline';
 import { SearchBox } from '@/src/components/search/SearchBox';
 import { SettingsPanel } from '@/src/components/settings/SettingsPanel';
+import { Button } from '@/src/components/ui/button';
 import { useThemeVariables } from '@/src/hooks/useThemeVariables';
 import { useReader } from '@/src/state/ReaderContext';
 import { selectCurrentBook, selectCurrentChapterIndex } from '@/src/state/selectors';
@@ -74,12 +76,17 @@ export function ReaderShell() {
       } ${compact && !drawerOpen ? '-translate-x-full' : 'translate-x-0'}`}
     >
       <div className="flex h-10 items-center justify-between bg-[var(--nr-titlebar-bg)] px-3 text-sm font-semibold text-[var(--nr-titlebar-fg)]">
-        <span>探索器</span>
-        <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)]" onClick={() => inputRef.current?.click()}>+</button>
+        <span className="flex items-center gap-1.5">
+          <Compass className="h-4 w-4" />
+          探索器
+        </span>
+        <Button variant="ghost" size="iconSm" aria-label="导入文件" title="导入 TXT 文件" onClick={() => inputRef.current?.click()}>
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
       <SearchBox />
       <BookshelfPanel />
-      <ChapterOutline onChapterSelect={compact ? closeDrawer : undefined} />
+      <ChapterOutline onChapterSelect={compact ? closeDrawer : undefined} visible={compact ? drawerOpen : state.config.sidebarVisible} />
     </aside>
   );
 
@@ -103,14 +110,18 @@ export function ReaderShell() {
           )}
           {sidebar}
           <main className="flex min-w-0 flex-1 flex-col">
-            <div className="flex h-11 items-center gap-2 bg-[var(--nr-titlebar-bg)] px-3 text-sm text-[var(--nr-titlebar-fg)]">
-              <button className="rounded px-3 py-2 hover:bg-[var(--nr-hover-bg)]" onClick={() => setDrawerOpen(!drawerOpen)}>☰</button>
+            <div className="flex min-h-11 items-center gap-2 bg-[var(--nr-titlebar-bg)] px-2 pt-[env(safe-area-inset-top)] text-sm text-[var(--nr-titlebar-fg)]">
+              <Button variant="ghost" size="icon" aria-label="打开侧边栏" onClick={() => setDrawerOpen(!drawerOpen)}>
+                <Menu className="h-5 w-5" />
+              </Button>
               <div className="min-w-0 flex-1 truncate">{currentBook?.name ?? '欢迎使用小说阅读器'}</div>
-              <button className="rounded px-3 py-2 hover:bg-[var(--nr-hover-bg)]" onClick={() => setSettingsOpen(true)}>设置</button>
+              <Button variant="ghost" size="icon" aria-label="设置" onClick={() => setSettingsOpen(true)}>
+                <SettingsIcon className="h-5 w-5" />
+              </Button>
             </div>
             {state.error && <div className="bg-red-700 px-3 py-1.5 text-xs text-white">{state.error}</div>}
             <ReaderPane />
-            <div className="flex h-8 shrink-0 items-center justify-between gap-1 bg-[var(--nr-statusbar-bg)] px-2 text-xs text-[var(--nr-statusbar-fg)]">
+            <div className="flex min-h-8 shrink-0 items-center justify-between gap-1 bg-[var(--nr-statusbar-bg)] px-2 pb-[env(safe-area-inset-bottom)] text-xs text-[var(--nr-statusbar-fg)]">
               <span className="truncate">{currentBook?.name ?? ''}</span>
               <span className="shrink-0">{state.currentBookId ? `${(((state.currentPage + 1) / state.pages.length) * 100).toFixed(1)}%` : '拖入 TXT 或点击 + 导入'}</span>
             </div>
@@ -120,15 +131,19 @@ export function ReaderShell() {
         <>
           {state.config.sidebarVisible && sidebar}
           <main className="flex min-w-0 flex-1 flex-col">
-            <div className="flex h-10 items-center gap-3 bg-[var(--nr-titlebar-bg)] px-4 text-sm text-[var(--nr-titlebar-fg)]">
-              <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)]" onClick={() => actions.updateConfig({ sidebarVisible: !state.config.sidebarVisible })}>☰</button>
+            <div className="flex h-10 items-center gap-2 bg-[var(--nr-titlebar-bg)] px-2 text-sm text-[var(--nr-titlebar-fg)]">
+              <Button variant="ghost" size="iconSm" aria-label="切换侧边栏" onClick={() => actions.updateConfig({ sidebarVisible: !state.config.sidebarVisible })}>
+                <Menu className="h-4 w-4" />
+              </Button>
               <div className="min-w-0 flex-1 truncate">{currentBook?.name ?? '欢迎使用小说阅读器'}</div>
               <div className="hidden max-w-sm truncate text-[var(--nr-accent)] md:block">{currentChapter?.title ?? ''}</div>
-              <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)]" onClick={() => setSettingsOpen(true)}>设置</button>
+              <Button variant="ghost" size="iconSm" aria-label="设置" onClick={() => setSettingsOpen(true)}>
+                <SettingsIcon className="h-4 w-4" />
+              </Button>
             </div>
             {state.error && <div className="bg-red-700 px-4 py-2 text-sm text-white">{state.error}</div>}
             <ReaderPane />
-            <div className="flex h-7 shrink-0 items-center justify-between gap-2 bg-[var(--nr-statusbar-bg)] px-3 text-xs text-[var(--nr-statusbar-fg)]">
+            <div className="flex min-h-7 shrink-0 items-center justify-between gap-2 bg-[var(--nr-statusbar-bg)] px-3 pb-[env(safe-area-inset-bottom)] text-xs text-[var(--nr-statusbar-fg)]">
               <span className="truncate">{currentBook?.name ?? ''}</span>
               <span className="shrink-0">{state.currentBookId ? `${(((state.currentPage + 1) / state.pages.length) * 100).toFixed(1)}%` : '拖入 TXT 或点击 + 导入'}</span>
             </div>

@@ -1,3 +1,8 @@
+import { Minus, Plus } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/src/components/ui/dialog';
+import { Input } from '@/src/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/src/components/ui/select';
 import { THEME_NAMES } from '@/src/constants/themes';
 import { useReader } from '@/src/state/ReaderContext';
 
@@ -10,20 +15,30 @@ function Stepper({ label, value, min, max, step, onChange }: {
   onChange: (v: number) => void;
 }) {
   return (
-    <label className="mb-4 block text-sm">
-      <span className="mb-1 block">{label}</span>
+    <div className="mb-4 text-sm">
+      <div className="mb-1.5">{label}</div>
       <div className="flex items-center gap-2">
-        <button
-          className="shrink-0 rounded bg-[var(--nr-button-bg)] px-3 py-2 text-lg text-[var(--nr-button-fg)] active:bg-[var(--nr-button-active-bg)] compact:px-4 compact:py-3"
+        <Button
+          variant="default"
+          size="icon"
+          aria-label="减少"
           onClick={() => onChange(Math.max(min, value - step))}
-        >−</button>
+          disabled={value <= min}
+        >
+          <Minus className="h-4 w-4" />
+        </Button>
         <span className="min-w-[3rem] text-center tabular-nums compact:text-lg">{value}</span>
-        <button
-          className="shrink-0 rounded bg-[var(--nr-button-bg)] px-3 py-2 text-lg text-[var(--nr-button-fg)] active:bg-[var(--nr-button-active-bg)] compact:px-4 compact:py-3"
+        <Button
+          variant="default"
+          size="icon"
+          aria-label="增加"
           onClick={() => onChange(Math.min(max, value + step))}
-        >+</button>
+          disabled={value >= max}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -31,29 +46,67 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const { state, actions } = useReader();
 
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-      <div className="w-[90vw] max-w-[420px] rounded-lg border border-[var(--nr-border-color)] bg-[var(--nr-bg)] p-5 text-[var(--nr-fg)] shadow-xl">
-        <div className="mb-4 flex items-center justify-between border-b border-[var(--nr-separator)] pb-3">
-          <h2 className="text-lg font-semibold">设置</h2>
-          <button className="rounded px-2 py-1 hover:bg-[var(--nr-hover-bg)] compact:px-3 compact:py-2" onClick={onClose}>×</button>
-        </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>设置</DialogTitle>
+        </DialogHeader>
+
         <label className="mb-4 block text-sm">
-          <span className="mb-1 block">主题风格</span>
-          <select className="w-full rounded bg-[var(--nr-input-bg)] px-3 py-2 text-[var(--nr-input-fg)] compact:px-4 compact:py-3" value={state.config.theme} onChange={(event) => void actions.updateConfig({ theme: event.target.value as typeof state.config.theme })}>
-            {THEME_NAMES.map((theme) => <option key={theme} value={theme}>{theme}</option>)}
-          </select>
+          <span className="mb-1.5 block">主题风格</span>
+          <Select
+            value={state.config.theme}
+            onValueChange={(value) => void actions.updateConfig({ theme: value as typeof state.config.theme })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {THEME_NAMES.map((theme) => (
+                <SelectItem key={theme} value={theme}>{theme}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
-        <Stepper label={`每页字数: ${state.config.wordsPerPage}`} value={state.config.wordsPerPage} min={200} max={3000} step={100} onChange={(v) => void actions.updateConfig({ wordsPerPage: v })} />
-        <Stepper label={`字体大小: ${state.config.fontSize}`} value={state.config.fontSize} min={10} max={28} step={1} onChange={(v) => void actions.updateConfig({ fontSize: v })} />
+
+        <Stepper
+          label={`每页字数: ${state.config.wordsPerPage}`}
+          value={state.config.wordsPerPage}
+          min={200}
+          max={3000}
+          step={100}
+          onChange={(v) => void actions.updateConfig({ wordsPerPage: v })}
+        />
+        <Stepper
+          label={`字体大小: ${state.config.fontSize}`}
+          value={state.config.fontSize}
+          min={10}
+          max={28}
+          step={1}
+          onChange={(v) => void actions.updateConfig({ fontSize: v })}
+        />
+
         <label className="mb-4 block text-sm">
-          <span className="mb-1 block">字体名称</span>
-          <input className="w-full rounded bg-[var(--nr-input-bg)] px-3 py-2 text-[var(--nr-input-fg)] compact:px-4 compact:py-3" value={state.config.fontFamily} onChange={(event) => void actions.updateConfig({ fontFamily: event.target.value })} />
+          <span className="mb-1.5 block">字体名称</span>
+          <Input
+            value={state.config.fontFamily}
+            onChange={(event) => void actions.updateConfig({ fontFamily: event.target.value })}
+          />
         </label>
-        <Stepper label={`自动关闭: ${state.config.autoCloseTimeout}s`} value={state.config.autoCloseTimeout} min={0} max={300} step={5} onChange={(v) => void actions.updateConfig({ autoCloseTimeout: v })} />
-        <div className="flex justify-end">
-          <button className="rounded bg-[var(--nr-button-bg)] px-4 py-2 text-sm text-[var(--nr-button-fg)] compact:px-6 compact:py-3" onClick={onClose}>完成</button>
-        </div>
-      </div>
-    </div>
+
+        <Stepper
+          label={`自动关闭: ${state.config.autoCloseTimeout}s`}
+          value={state.config.autoCloseTimeout}
+          min={0}
+          max={300}
+          step={5}
+          onChange={(v) => void actions.updateConfig({ autoCloseTimeout: v })}
+        />
+
+        <DialogFooter>
+          <Button onClick={onClose}>完成</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

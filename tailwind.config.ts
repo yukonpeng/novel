@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
+import animate from 'tailwindcss-animate';
 
 export default {
   content: ['./entrypoints/**/*.{ts,tsx}', './src/**/*.{ts,tsx}', './standalone/**/*.{ts,tsx}'],
@@ -20,5 +21,6 @@ export default {
     plugin(({ addVariant }) => {
       addVariant('compact', '.compact &');
     }),
+    animate,
   ],
 } satisfies Config;

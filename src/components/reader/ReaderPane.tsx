@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
 import { useReader } from '@/src/state/ReaderContext';
 
 function highlightText(text: string, keyword: string) {
@@ -74,7 +76,7 @@ export function ReaderPane() {
       }
 
       if (active) {
-        const maxOffset = window.innerWidth * 0.3;
+        const maxOffset = window.innerWidth * 0.7;
         let offset = mx;
         if (isFirstPage && offset > 0) offset = offset * 0.3;
         if (isLastPage && offset < 0) offset = offset * 0.3;
@@ -82,8 +84,8 @@ export function ReaderPane() {
         setSwipeOffset(offset);
         setTransition('');
 
-        const threshold = window.innerWidth * 0.2;
-        if (Math.abs(offset) > threshold || Math.abs(vx) > 0.5) {
+        const threshold = window.innerWidth * 0.5;
+        if (Math.abs(offset) > threshold || Math.abs(vx) > 0.8) {
           if (offset < 0 && !isLastPage) {
             animateToPage('next');
             cancel();
@@ -102,7 +104,7 @@ export function ReaderPane() {
       axis: 'x',
       filterTaps: true,
       threshold: 10,
-      swipe: { velocity: 0.4, distance: 50 },
+      swipe: { velocity: 0.6, distance: 160 },
     },
   );
 
@@ -150,11 +152,15 @@ export function ReaderPane() {
       >
         {highlightText(pageText, state.searchKeyword)}
       </article>
-      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 sm:gap-4 sm:px-4 compact:h-14 compact:gap-3 compact:px-3">
-        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4 compact:px-4 compact:py-2.5 compact:text-lg" onClick={() => void actions.setPage(state.currentPage - 1)}>←</button>
+      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] sm:gap-4 sm:px-4 compact:h-14 compact:gap-3 compact:px-3">
+        <Button variant="default" size="icon" aria-label="上一页" onClick={() => void actions.setPage(state.currentPage - 1)}>
+          <ChevronLeft className="h-4 w-4 compact:h-5 compact:w-5" />
+        </Button>
         <span className="shrink-0 text-center text-xs sm:w-24 sm:text-sm compact:text-sm">{state.currentPage + 1}/{state.pages.length}</span>
         <input className="min-w-0 flex-1 accent-[var(--nr-accent)]" type="range" min={1} max={state.pages.length} value={state.currentPage + 1} onChange={(event) => void actions.setPage(Number(event.target.value) - 1)} />
-        <button className="shrink-0 rounded bg-[var(--nr-button-bg)] px-2 py-1.5 text-sm text-[var(--nr-button-fg)] hover:bg-[var(--nr-button-active-bg)] sm:px-4 compact:px-4 compact:py-2.5 compact:text-lg" onClick={() => void actions.setPage(state.currentPage + 1)}>→</button>
+        <Button variant="default" size="icon" aria-label="下一页" onClick={() => void actions.setPage(state.currentPage + 1)}>
+          <ChevronRight className="h-4 w-4 compact:h-5 compact:w-5" />
+        </Button>
       </div>
     </div>
   );
