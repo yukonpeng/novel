@@ -152,7 +152,7 @@ export function ReaderPane() {
       >
         {highlightText(pageText, state.searchKeyword)}
       </article>
-      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] sm:gap-4 sm:px-4 compact:h-14 compact:gap-3 compact:px-3">
+      <div className="flex h-12 shrink-0 items-center gap-2 border-t border-[var(--nr-separator)] bg-[var(--nr-bg)] px-2 sm:gap-4 sm:px-4 compact:h-14 compact:gap-3 compact:px-3">
         <Button variant="default" size="icon" aria-label="上一页" onClick={() => void actions.setPage(state.currentPage - 1)}>
           <ChevronLeft className="h-4 w-4 compact:h-5 compact:w-5" />
         </Button>

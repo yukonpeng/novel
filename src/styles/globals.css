@@ -43,20 +43,6 @@ body,
   margin: 0;
 }
 
-.nr-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-.nr-safe-left {
-  padding-left: env(safe-area-inset-left);
-}
-.nr-safe-right {
-  padding-right: env(safe-area-inset-right);
-}
-.nr-safe-x {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
 body {
   overflow: auto;
   background: var(--nr-bg);
