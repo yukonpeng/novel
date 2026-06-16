@@ -72,9 +72,9 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         <Stepper
           label={`每页字数: ${state.config.wordsPerPage}`}
           value={state.config.wordsPerPage}
-          min={200}
+          min={50}
           max={3000}
-          step={100}
+          step={50}
           onChange={(v) => void actions.updateConfig({ wordsPerPage: v })}
         />
         <Stepper
